@@ -72,6 +72,7 @@ pub struct App {
     pub show_help: bool,
     pub ollama_model: String,
     pub available_models: Vec<String>,
+    pub is_loading: bool,
 }
 
 #[derive(Clone)]
@@ -194,6 +195,7 @@ impl App {
             show_help: false,
             ollama_model: String::new(),
             available_models: Vec::new(),
+            is_loading: false,
         }
     }
 

@@ -95,20 +95,21 @@ async fn run_app(
                         app.status_bar.mode = "NORMAL".to_string();
                         
                         app.add_message("You".to_string(), prompt.clone());
-                        app.add_message("CodeAgent".to_string(), "⏳ Thinking...".to_string());
+                        app.is_loading = true;
                         
                         match ollama.generate(&prompt).await {
                             Ok(response) => {
-                                if let Some(last) = app.chat_messages.last_mut() {
-                                    last.content = response;
-                                }
+                                app.add_message("CodeAgent".to_string(), response);
                             }
                             Err(e) => {
-                                if let Some(last) = app.chat_messages.last_mut() {
-                                    last.content = format!("❌ Error: {}", e);
-                                }
+                                app.add_message(
+                                    "Error".to_string(),
+                                    format!("❌ Failed: {}", e),
+                                );
                             }
                         }
+                        
+                        app.is_loading = false;
                     } else {
                         if let KeyCode::Char(c) = key_event.code {
                             handle_input(app, KeyCode::Char(c), key_event.modifiers);

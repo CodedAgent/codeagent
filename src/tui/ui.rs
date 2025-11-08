@@ -78,6 +78,10 @@ fn draw_main_content(f: &mut Frame, app: &App, area: Rect) {
     if app.show_help {
         draw_help_modal(f, app);
     }
+
+    if app.is_loading {
+        draw_loading_indicator(f, app);
+    }
 }
 
 fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
@@ -249,15 +253,34 @@ fn draw_messages(f: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_input_box(f: &mut Frame, app: &App, area: Rect) {
-    let spinner = app.get_spinner();
-    let border_color = match app.input_mode {
-        InputMode::Insert => Color::Green,
-        InputMode::Command => Color::Yellow,
-        InputMode::Search => Color::Magenta,
-        InputMode::Normal => Color::Gray,
+    let spinner = if app.is_loading {
+        match (app.animation_frame / 2) % 4 {
+            0 => "⠋",
+            1 => "⠙",
+            2 => "⠹",
+            _ => "⠸",
+        }
+    } else {
+        app.get_spinner()
     };
 
-    let input_text = if app.input.is_empty() && app.input_mode == InputMode::Normal {
+    let border_color = if app.is_loading {
+        Color::Magenta
+    } else {
+        match app.input_mode {
+            InputMode::Insert => Color::Green,
+            InputMode::Command => Color::Yellow,
+            InputMode::Search => Color::Magenta,
+            InputMode::Normal => Color::Gray,
+        }
+    };
+
+    let input_text = if app.is_loading {
+        Span::styled(
+            "⏳ Processing request... Press Ctrl+C to cancel",
+            Style::default().fg(Color::Magenta).italic(),
+        )
+    } else if app.input.is_empty() && app.input_mode == InputMode::Normal {
         Span::styled(" press i to chat • ? for help ", Style::default().fg(Color::DarkGray))
     } else {
         Span::styled(app.input.clone(), Style::default().fg(Color::White))
@@ -266,14 +289,14 @@ fn draw_input_box(f: &mut Frame, app: &App, area: Rect) {
     let input = Paragraph::new(input_text)
         .block(
             Block::default()
-                .title(format!(" {} Input ", spinner))
+                .title(format!(" {} Input {} ", spinner, if app.is_loading { "▓" } else { "" }))
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(border_color))
         );
 
     f.render_widget(input, area);
 
-    if app.input_mode == InputMode::Insert {
+    if app.input_mode == InputMode::Insert && !app.is_loading {
         let input_len = app.input.len() as u16;
         let max_width = area.width.saturating_sub(4);
         let cursor_offset = input_len.min(max_width) + 2;
@@ -468,6 +491,49 @@ fn draw_help_modal(f: &mut Frame, _app: &App) {
 
     f.render_widget(Clear, modal_area);
     f.render_widget(modal, modal_area);
+}
+
+fn draw_loading_indicator(f: &mut Frame, app: &App) {
+    let spinner_chars = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    let spinner = spinner_chars[(app.animation_frame / 2) as usize % spinner_chars.len()];
+
+    let content = vec![
+        Line::from(""),
+        Line::from(Span::styled(
+            format!("  {}  Generating AI response...", spinner),
+            Style::default().fg(Color::Magenta).bold(),
+        )),
+        Line::from(Span::styled(
+            format!("  Model: {}", app.ollama_model),
+            Style::default().fg(Color::Cyan),
+        )),
+        Line::from(""),
+        Line::from(Span::styled(
+            "  Press ESC to cancel",
+            Style::default().fg(Color::Yellow).italic(),
+        )),
+        Line::from(""),
+    ];
+
+    let width = 50u16;
+    let height = 7u16;
+    let x = (f.size().width.saturating_sub(width)) / 2;
+    let y = (f.size().height.saturating_sub(height)) / 2;
+
+    let popup_area = Rect::new(x, y, width, height);
+
+    let popup = Paragraph::new(content)
+        .block(
+            Block::default()
+                .title(" Processing ")
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Magenta).bold())
+        )
+        .style(Style::default().fg(Color::White).bg(Color::Black))
+        .alignment(Alignment::Center);
+
+    f.render_widget(Clear, popup_area);
+    f.render_widget(popup, popup_area);
 }
 
 fn draw_size_warning(f: &mut Frame) {
