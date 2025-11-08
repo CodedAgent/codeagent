@@ -87,30 +87,32 @@ async fn run_app(
         if let Some(event) = events.next() {
             match event {
                 tui::events::AppEvent::Input(key_event) => {
-                    if let KeyCode::Char(c) = key_event.code {
-                        handle_input(app, KeyCode::Char(c), key_event.modifiers);
-                    } else {
-                        handle_input(app, key_event.code, key_event.modifiers);
-                    }
-
                     if app.input_mode == tui::app::InputMode::Insert && key_event.code == KeyCode::Enter {
                         let prompt = app.input.clone();
                         app.input.clear();
+                        app.input_mode = tui::app::InputMode::Normal;
+                        app.status_bar.mode = "NORMAL".to_string();
                         
+                        app.add_message("You".to_string(), prompt.clone());
                         app.add_message("CodeAgent".to_string(), "⏳ Thinking...".to_string());
                         
                         match ollama.generate(&prompt).await {
                             Ok(response) => {
-                                app.chat_messages.pop();
-                                app.add_message("CodeAgent".to_string(), response);
+                                if let Some(last) = app.chat_messages.last_mut() {
+                                    last.content = response;
+                                }
                             }
                             Err(e) => {
-                                app.chat_messages.pop();
-                                app.add_message(
-                                    "Error".to_string(),
-                                    format!("Failed to generate response: {}", e),
-                                );
+                                if let Some(last) = app.chat_messages.last_mut() {
+                                    last.content = format!("❌ Error: {}", e);
+                                }
                             }
+                        }
+                    } else {
+                        if let KeyCode::Char(c) = key_event.code {
+                            handle_input(app, KeyCode::Char(c), key_event.modifiers);
+                        } else {
+                            handle_input(app, key_event.code, key_event.modifiers);
                         }
                     }
                 }
