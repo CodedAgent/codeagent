@@ -71,9 +71,9 @@ fn run_app(
             match event {
                 tui::events::AppEvent::Input(key_event) => {
                     if let KeyCode::Char(c) = key_event.code {
-                        handle_input(&mut app, KeyCode::Char(c));
+                        handle_input(&mut app, KeyCode::Char(c), key_event.modifiers);
                     } else {
-                        handle_input(&mut app, key_event.code);
+                        handle_input(&mut app, key_event.code, key_event.modifiers);
                     }
                 }
                 tui::events::AppEvent::Tick => {
