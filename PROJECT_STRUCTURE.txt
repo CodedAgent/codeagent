@@ -1,0 +1,78 @@
+CodeAgent/
+├── Cargo.toml                 # Project manifest with dependencies
+├── Cargo.lock                 # Dependency lock file (auto-generated)
+├── README.md                  # User documentation
+├── PHASE1_SUMMARY.md          # Phase 1 completion report
+├── PROJECT_STRUCTURE.txt      # This file
+├── .gitignore                 # Version control exclusions
+│
+├── src/
+│   ├── main.rs               # Application entry point
+│   ├── cli.rs                # Command-line interface (clap)
+│   │
+│   ├── core/
+│   │   ├── mod.rs            # Core module exports
+│   │   ├── config.rs         # Configuration management
+│   │   ├── executor.rs       # Task execution engine
+│   │   ├── planner.rs        # Task planning logic
+│   │   └── context.rs        # Project context analysis
+│   │
+│   ├── integrations/
+│   │   ├── mod.rs            # Integration module exports
+│   │   ├── git.rs            # Git operations (git2 library)
+│   │   ├── ollama.rs         # Ollama LLM API client
+│   │   └── test_runner.rs    # Multi-framework test execution
+│   │
+│   └── utils/
+│       ├── mod.rs            # Utilities module exports
+│       ├── file_utils.rs     # File I/O and discovery
+│       └── search.rs         # Pattern and keyword search
+│
+└── target/                    # Build outputs (auto-generated)
+    ├── debug/                # Debug builds
+    │   └── codeagent         # Debug executable
+    └── release/              # Release builds
+        └── codeagent         # Release executable (optimized)
+
+
+KEY MODULES EXPLAINED:
+
+CLI Layer (cli.rs)
+  - Handles command-line argument parsing
+  - Two commands: `run` (execute task) and `init` (initialize project)
+  - Supports: prompts, dry-run mode, help documentation
+
+Core Engine (core/)
+  - config.rs: Loads/manages model provider configuration
+  - executor.rs: Main task execution orchestrator
+  - planner.rs: Converts prompts into execution plans
+  - context.rs: Analyzes project structure and context
+
+Integrations (integrations/)
+  - git.rs: Git operations (stage, commit, status)
+  - ollama.rs: Async client for Ollama LLM API
+  - test_runner.rs: Detects and runs multiple test frameworks
+
+Utilities (utils/)
+  - file_utils.rs: File discovery, read/write operations
+  - search.rs: Regex and keyword-based search across files
+
+
+BUILD ARTIFACTS:
+
+Debug Build:    ./target/debug/codeagent
+Release Build:  ./target/release/codeagent
+
+Build Commands:
+  cargo build           # Debug build
+  cargo build --release # Optimized release build
+  cargo test           # Run tests
+  cargo clean          # Clean build artifacts
+
+
+EXECUTION EXAMPLES:
+
+./target/release/codeagent --help
+./target/release/codeagent init .
+./target/release/codeagent run "Find all TODO comments" --dry-run
+./target/release/codeagent run "Refactor deprecated functions"

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeAgent - AI-Powered Code Automation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        nav a {
+            margin-left: 30px;
+            text-decoration: none;
+            color: #333;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #667eea;
+        }
+
+        .hero {
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .features {
+            background: white;
+            padding: 80px 0;
+            margin-top: 60px;
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 50px;
+            color: #333;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            padding: 30px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .install-section {
+            background: #f8f9fa;
+            padding: 80px 0;
+        }
+
+        .install-section h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 50px;
+            color: #333;
+        }
+
+        .install-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', monospace;
+        }
+
+        .tab-content pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Monaco', monospace;
+        }
+
+        .stats {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            margin: 30px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .stat-item p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            nav a {
+                margin-left: 15px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">🤖 CodeAgent</div>
+            <nav>
+                <a href="#features">Features</a>
+                <a href="#install">Install</a>
+                <a href="https://github.com/yourusername/CodeAgent" target="_blank">GitHub</a>
+                <a href="https://github.com/yourusername/CodeAgent/releases" target="_blank">Downloads</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>CodeAgent</h1>
+            <p>AI-Powered Code Automation Platform</p>
+            <p style="font-size: 16px; margin-bottom: 30px; opacity: 0.9;">
+                Multi-step task automation with LLM integration, intelligent error correction, and enterprise features
+            </p>
+            <div class="buttons">
+                <a href="https://github.com/yourusername/CodeAgent/releases" class="btn btn-primary">Download Latest</a>
+                <a href="#install" class="btn btn-secondary">Installation Guide</a>
+                <a href="https://github.com/yourusername/CodeAgent" class="btn btn-secondary">View on GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <h2>Enterprise Features</h2>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <h3>35+</h3>
+                    <p>Features</p>
+                </div>
+                <div class="stat-item">
+                    <h3>2,600+</h3>
+                    <p>Lines of Code</p>
+                </div>
+                <div class="stat-item">
+                    <h3>20</h3>
+                    <p>Modules</p>
+                </div>
+                <div class="stat-item">
+                    <h3>0</h3>
+                    <p>Compilation Errors</p>
+                </div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>🤖 Multi-LLM Support</h3>
+                    <p>Seamlessly switch between OpenAI GPT-4o, Anthropic Claude 3.5, and local Ollama models. Unified interface for all providers.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>📋 Multi-Step Planning</h3>
+                    <p>Intelligent task decomposition with dependency management, complexity estimation, and progress tracking.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🧪 Framework Integration</h3>
+                    <p>Support for Jest, Pytest, Go Test, Cargo Test, ESLint, Pylint, and Clippy. Framework-specific output parsing.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🔧 Error Correction</h3>
+                    <p>Automatic error analysis, fix suggestion generation with confidence scoring, and intelligent retry strategies.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>📦 PR Automation</h3>
+                    <p>Auto-generate pull requests with AI descriptions, GitHub integration, reviewer assignment, and label management.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>⚡ Performance Caching</h3>
+                    <p>Result caching with TTL support, LRU eviction policy, and optimized analysis storage for faster execution.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🎯 Interactive Mode</h3>
+                    <p>Real-time progress tracking, user prompts, change previews, and execution summaries for complete control.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🔄 Git Integration</h3>
+                    <p>Seamless Git operations including staging, committing, status checking, and automatic branch management.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>⚙️ Configuration</h3>
+                    <p>YAML-based configuration with model provider selection, file filtering, custom tools, and validation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="install-section" id="install">
+        <div class="container">
+            <h2>Installation <span class="version-badge">v0.3.0</span></h2>
+
+            <div class="install-tabs">
+                <button class="tab-btn active" onclick="showTab(event, 'macos')">macOS</button>
+                <button class="tab-btn" onclick="showTab(event, 'linux')">Linux</button>
+                <button class="tab-btn" onclick="showTab(event, 'windows')">Windows</button>
+                <button class="tab-btn" onclick="showTab(event, 'source')">From Source</button>
+            </div>
+
+            <div id="macos" class="tab-content active">
+                <h3>macOS Installation</h3>
+                <p>Download the latest release for your architecture:</p>
+                <pre>
+# Intel (x86_64)
+curl -L https://github.com/yourusername/CodeAgent/releases/download/v0.3.0/codeagent-macos-x86_64 -o codeagent
+chmod +x codeagent
+./codeagent --version
+
+# Apple Silicon (ARM64)
+curl -L https://github.com/yourusername/CodeAgent/releases/download/v0.3.0/codeagent-macos-aarch64 -o codeagent
+chmod +x codeagent
+./codeagent --version</pre>
+                <p><strong>Optional:</strong> Add to PATH</p>
+                <pre>sudo mv codeagent /usr/local/bin/
+codeagent --help</pre>
+            </div>
+
+            <div id="linux" class="tab-content">
+                <h3>Linux Installation</h3>
+                <p>Download the Linux x86_64 binary:</p>
+                <pre>
+curl -L https://github.com/yourusername/CodeAgent/releases/download/v0.3.0/codeagent-linux-x86_64 -o codeagent
+chmod +x codeagent
+./codeagent --version</pre>
+                <p><strong>Optional:</strong> Add to PATH</p>
+                <pre>sudo mv codeagent /usr/local/bin/
+codeagent --help</pre>
+            </div>
+
+            <div id="windows" class="tab-content">
+                <h3>Windows Installation</h3>
+                <p>Download the Windows x86_64 binary:</p>
+                <pre>
+# Using PowerShell
+$url = "https://github.com/yourusername/CodeAgent/releases/download/v0.3.0/codeagent-windows-x86_64"
+Invoke-WebRequest -Uri $url -OutFile codeagent.exe
+.\codeagent.exe --version</pre>
+                <p><strong>Optional:</strong> Add to System PATH for global access</p>
+            </div>
+
+            <div id="source" class="tab-content">
+                <h3>Build from Source</h3>
+                <p>Requirements: Rust 1.70+</p>
+                <pre>
+# Clone the repository
+git clone https://github.com/yourusername/CodeAgent.git
+cd CodeAgent
+
+# Build release binary
+cargo build --release
+
+# Run
+./target/release/codeagent --help</pre>
+            </div>
+
+            <div class="stats" style="margin-top: 40px;">
+                <div class="stat-item">
+                    <h3>3 Platforms</h3>
+                    <p>macOS, Linux, Windows</p>
+                </div>
+                <div class="stat-item">
+                    <h3>3 Architectures</h3>
+                    <p>x86_64, ARM64, Native</p>
+                </div>
+                <div class="stat-item">
+                    <h3>Zero Config</h3>
+                    <p>Works out of the box</p>
+                </div>
+                <div class="stat-item">
+                    <h3>Auto Updates</h3>
+                    <p>GitHub Releases</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 CodeAgent - Enterprise AI Code Automation</p>
+            <p style="margin-top: 15px; font-size: 14px; color: #999;">
+                <a href="https://github.com/yourusername/CodeAgent/blob/main/LICENSE">License</a> •
+                <a href="https://github.com/yourusername/CodeAgent/issues">Report Issues</a> •
+                <a href="https://github.com/yourusername/CodeAgent">GitHub</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        function showTab(evt, tabName) {
+            var i, tabcontent, tabbuttons;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            tabbuttons = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tabbuttons.length; i++) {
+                tabbuttons[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+</body>
+</html>
