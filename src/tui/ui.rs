@@ -85,14 +85,14 @@ fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(3),
-            Constraint::Min(8),
-            Constraint::Length(6),
+            Constraint::Min(6),
+            Constraint::Length(8),
         ])
         .split(area);
 
     draw_logo(f, sidebar_layout[0]);
     draw_file_tree(f, app, sidebar_layout[1]);
-    draw_sidebar_stats(f, sidebar_layout[2]);
+    draw_ollama_models(f, app, sidebar_layout[2]);
 }
 
 fn draw_logo(f: &mut Frame, area: Rect) {
@@ -164,6 +164,41 @@ fn draw_sidebar_stats(f: &mut Frame, area: Rect) {
         );
 
     f.render_widget(stats_widget, area);
+}
+
+fn draw_ollama_models(f: &mut Frame, app: &App, area: Rect) {
+    let mut model_lines = vec![
+        Line::from(Span::styled("🤖 OLLAMA", Style::default().bold())),
+        Line::from(""),
+    ];
+
+    if app.available_models.is_empty() {
+        model_lines.push(Line::from(Span::styled(
+            "No models",
+            Style::default().fg(Color::Red),
+        )));
+    } else {
+        model_lines.push(Line::from(format!("Active: {}", app.ollama_model)));
+        model_lines.push(Line::from(""));
+        for model in &app.available_models {
+            let style = if model == &app.ollama_model {
+                Style::default().fg(Color::Green).bold()
+            } else {
+                Style::default().fg(Color::DarkGray)
+            };
+            model_lines.push(Line::from(Span::styled(format!("▪ {}", model), style)));
+        }
+    }
+
+    let models_widget = Paragraph::new(model_lines)
+        .style(Style::default().fg(Color::Cyan))
+        .block(
+            Block::default()
+                .borders(Borders::RIGHT | Borders::TOP)
+                .border_style(Style::default().fg(Color::DarkGray))
+        );
+
+    f.render_widget(models_widget, area);
 }
 
 fn draw_chat_tab(f: &mut Frame, app: &App, area: Rect) {

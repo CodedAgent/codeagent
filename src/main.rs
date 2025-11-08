@@ -37,10 +37,19 @@ async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     let project_path = cli.path.unwrap_or_else(|| ".".to_string());
 
-    let ollama_client = integrations::ollama::OllamaClient::new(
-        "http://localhost:11434".to_string(),
-        "mistral".to_string(),
-    );
+    let mut ollama_client = match integrations::ollama::OllamaClient::auto_detect().await {
+        Ok(client) => {
+            tracing::info!("✓ Connected to Ollama with {} available models", client.available_models.len());
+            client
+        }
+        Err(e) => {
+            tracing::warn!("Failed to auto-detect Ollama: {}", e);
+            integrations::ollama::OllamaClient::new(
+                "http://localhost:11434".to_string(),
+                "mistral".to_string(),
+            )
+        }
+    };
 
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -50,9 +59,11 @@ async fn main() -> anyhow::Result<()> {
     let mut terminal = Terminal::new(backend)?;
 
     let mut app = App::new(project_path);
+    app.ollama_model = ollama_client.model.clone();
+    app.available_models = ollama_client.available_models.clone();
     let events = EventHandler::new();
 
-    let result = run_app(&mut terminal, &mut app, &events, ollama_client).await;
+    let result = run_app(&mut terminal, &mut app, &events, &mut ollama_client).await;
 
     disable_raw_mode()?;
     execute!(io::stdout(), LeaveAlternateScreen)?;
@@ -68,7 +79,7 @@ async fn run_app(
     terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
     app: &mut App,
     events: &EventHandler,
-    ollama: integrations::ollama::OllamaClient,
+    ollama: &mut integrations::ollama::OllamaClient,
 ) -> io::Result<()> {
     while app.is_running {
         terminal.draw(|f| draw(f, app))?;

@@ -70,6 +70,8 @@ pub struct App {
     pub animation_frame: u64,
     pub notification: Option<Notification>,
     pub show_help: bool,
+    pub ollama_model: String,
+    pub available_models: Vec<String>,
 }
 
 #[derive(Clone)]
@@ -190,6 +192,8 @@ impl App {
             animation_frame: 0,
             notification: None,
             show_help: false,
+            ollama_model: String::new(),
+            available_models: Vec::new(),
         }
     }
 
