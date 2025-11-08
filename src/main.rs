@@ -15,7 +15,7 @@ mod parsers;
 mod pr_generator;
 mod utils;
 
-use cli::Cli;
+use cli::{Cli, InteractiveSession};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -27,15 +27,8 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     let cli = Cli::parse();
-
-    match cli.command {
-        cli::Command::Run { prompt, dry_run } => {
-            core::executor::run_task(&prompt, dry_run).await?;
-        }
-        cli::Command::Init { path } => {
-            core::config::init_project(&path)?;
-        }
-    }
+    let mut session = InteractiveSession::new(cli.path);
+    session.run();
 
     Ok(())
 }
