@@ -1,6 +1,6 @@
 use anyhow::Result;
 use crate::core::config::ProjectConfig;
-use crate::core::planner::{TaskDecomposer, ExecutionContext, ExecutionPlan};
+use crate::core::planner::{TaskDecomposer, ExecutionContext};
 use crate::utils::FileUtils;
 
 pub async fn run_task(prompt: &str, dry_run: bool) -> Result<()> {
@@ -52,7 +52,7 @@ pub async fn run_task(prompt: &str, dry_run: bool) -> Result<()> {
         println!("   Recommended: Run with --dry-run first to preview changes");
     }
 
-    let mut context = ExecutionContext::new(plan, dry_run);
+    let context = ExecutionContext::new(plan, dry_run);
 
     println!("\n🚀 Execution Status:");
     println!("   Steps to Execute: {}", context.plan.steps.len());

@@ -1,3 +1,3 @@
-pub mod mode;
+#![allow(dead_code)]
 
-pub use mode::{InteractiveMode, UserChoice};
+pub mod mode;

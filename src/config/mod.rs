@@ -1,3 +1,3 @@
-pub mod yaml_parser;
+#![allow(dead_code)]
 
-pub use yaml_parser::YamlConfig;
+pub mod yaml_parser;

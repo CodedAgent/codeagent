@@ -1,5 +1,6 @@
-use clap::{Parser, Subcommand};
-use std::path::PathBuf;
+#![allow(dead_code, unused_variables)]
+
+use clap::Parser;
 use tracing_subscriber;
 
 mod cli;

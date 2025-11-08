@@ -1,3 +1,3 @@
-pub mod analyzer;
+#![allow(dead_code)]
 
-pub use analyzer::{ErrorAnalyzer, FixSuggestion};
+pub mod analyzer;

@@ -1,5 +1,4 @@
 use crate::parsers::{TestResult, TestStatus, LintResult};
-use regex::Regex;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
