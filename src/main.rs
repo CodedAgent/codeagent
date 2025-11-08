@@ -76,7 +76,9 @@ fn run_app(
                         handle_input(&mut app, key_event.code);
                     }
                 }
-                tui::events::AppEvent::Tick => {}
+                tui::events::AppEvent::Tick => {
+                    app.tick();
+                }
             }
         }
     }

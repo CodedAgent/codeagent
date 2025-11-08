@@ -1,79 +1,175 @@
 use ratatui::prelude::*;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Panel {
+    Explorer,
+    Editor,
+    Output,
+    Chat,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum InputMode {
     Normal,
     Editing,
+    CommandPalette,
+}
+
+pub struct EditorState {
+    pub content: String,
+    pub cursor_x: usize,
+    pub cursor_y: usize,
+    pub scroll_x: usize,
+    pub scroll_y: usize,
 }
 
 pub struct App {
-    pub input: String,
-    pub input_mode: InputMode,
-    pub messages: Vec<String>,
-    pub scroll: usize,
     pub is_running: bool,
+    pub input_mode: InputMode,
+    pub active_panel: Panel,
+    pub input: String,
+    pub chat_messages: Vec<ChatMessage>,
+    pub output: Vec<String>,
+    pub editor: EditorState,
     pub project_path: String,
+    pub file_tree: Vec<FileNode>,
+    pub selected_file: usize,
+    pub command_palette_input: String,
+    pub animation_frame: u64,
+}
+
+#[derive(Debug, Clone)]
+pub struct ChatMessage {
+    pub author: String,
+    pub content: String,
+    pub timestamp: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct FileNode {
+    pub name: String,
+    pub path: String,
+    pub is_dir: bool,
+    pub expanded: bool,
+    pub depth: usize,
 }
 
 impl App {
     pub fn new(project_path: String) -> Self {
+        let file_tree = vec![
+            FileNode {
+                name: "src/".to_string(),
+                path: "src".to_string(),
+                is_dir: true,
+                expanded: true,
+                depth: 0,
+            },
+            FileNode {
+                name: "main.rs".to_string(),
+                path: "src/main.rs".to_string(),
+                is_dir: false,
+                expanded: false,
+                depth: 1,
+            },
+            FileNode {
+                name: "cli.rs".to_string(),
+                path: "src/cli.rs".to_string(),
+                is_dir: false,
+                expanded: false,
+                depth: 1,
+            },
+            FileNode {
+                name: "Cargo.toml".to_string(),
+                path: "Cargo.toml".to_string(),
+                is_dir: false,
+                expanded: false,
+                depth: 0,
+            },
+            FileNode {
+                name: "README.md".to_string(),
+                path: "README.md".to_string(),
+                is_dir: false,
+                expanded: false,
+                depth: 0,
+            },
+        ];
+
         Self {
-            input: String::new(),
-            input_mode: InputMode::Normal,
-            messages: vec![
-                "Welcome to CodeAgent v0.3.0 - Interactive AI Coding Assistant".to_string(),
-                "Type 'help' for commands or describe your coding task.".to_string(),
-            ],
-            scroll: 0,
             is_running: true,
+            input_mode: InputMode::Normal,
+            active_panel: Panel::Chat,
+            input: String::new(),
+            chat_messages: vec![ChatMessage {
+                author: "CodeAgent".to_string(),
+                content: "👋 Welcome to CodeAgent v0.3.0\nI'm your AI-powered coding assistant.\nDescribe what you want to build or fix!".to_string(),
+                timestamp: "just now".to_string(),
+            }],
+            output: vec!["System ready ✓".to_string()],
+            editor: EditorState {
+                content: "// Your code here".to_string(),
+                cursor_x: 0,
+                cursor_y: 0,
+                scroll_x: 0,
+                scroll_y: 0,
+            },
             project_path,
+            file_tree,
+            selected_file: 0,
+            command_palette_input: String::new(),
+            animation_frame: 0,
         }
     }
 
-    pub fn add_message(&mut self, msg: String) {
-        self.messages.push(msg);
-        if self.messages.len() > 100 {
-            self.messages.remove(0);
+    pub fn add_message(&mut self, author: String, content: String) {
+        self.chat_messages.push(ChatMessage {
+            author,
+            content,
+            timestamp: "now".to_string(),
+        });
+        if self.chat_messages.len() > 200 {
+            self.chat_messages.remove(0);
         }
     }
 
     pub fn submit_input(&mut self) {
         if !self.input.is_empty() {
-            self.add_message(format!("🤖 You: {}", self.input.clone()));
-            self.process_command();
+            self.add_message("You".to_string(), self.input.clone());
+            let response = self.process_command(&self.input.clone());
+            self.add_message("CodeAgent".to_string(), response);
             self.input.clear();
-            self.input_mode = InputMode::Normal;
         }
     }
 
-    pub fn process_command(&mut self) {
-        match self.input.trim() {
-            "help" => self.show_help(),
+    pub fn process_command(&mut self, cmd: &str) -> String {
+        match cmd.trim() {
+            "help" => "Available commands:\n• /files - Show project files\n• /status - Show project status\n• /clear - Clear messages\n• /theme - Change theme".to_string(),
+            "status" => {
+                format!(
+                    "📊 Project Status\nPath: {}\nModules: 20\nFeatures: 35+\nVersion: 0.3.0",
+                    self.project_path
+                )
+            }
             "clear" => {
-                self.messages.clear();
-                self.add_message("Terminal cleared.".to_string());
+                self.chat_messages.clear();
+                "Messages cleared ✓".to_string()
             }
-            "status" => self.show_status(),
-            "exit" | "quit" => self.is_running = false,
-            cmd => {
-                self.add_message(format!("⏳ Processing: {}", cmd));
-                self.add_message("✅ Command processed (feature coming soon)".to_string());
+            _ => {
+                self.output.push(format!("Processing: {}", cmd));
+                "✅ Command processed".to_string()
             }
         }
     }
 
-    fn show_help(&mut self) {
-        self.add_message("╔════ Available Commands ════╗".to_string());
-        self.add_message("│ help   - Show this message │".to_string());
-        self.add_message("│ clear  - Clear screen      │".to_string());
-        self.add_message("│ status - Show project info │".to_string());
-        self.add_message("│ exit   - Exit CodeAgent    │".to_string());
-        self.add_message("╚════════════════════════════╝".to_string());
+    pub fn tick(&mut self) {
+        self.animation_frame = self.animation_frame.wrapping_add(1);
     }
 
-    fn show_status(&mut self) {
-        self.add_message(format!("📁 Project: {}", self.project_path));
-        self.add_message("📊 Modules: 20 | Features: 35+ | LOC: 2,600+".to_string());
-        self.add_message("✅ Status: Ready to assist".to_string());
+    pub fn get_spinner(&self) -> &str {
+        match self.animation_frame % 4 {
+            0 => "◇",
+            1 => "◈",
+            2 => "◆",
+            _ => "◇",
+        }
     }
 }
