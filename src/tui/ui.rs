@@ -257,10 +257,10 @@ fn draw_input_box(f: &mut Frame, app: &App, area: Rect) {
         InputMode::Normal => Color::Gray,
     };
 
-    let input_text = if app.input.is_empty() {
-        " press i to chat • ? for help ".to_string()
+    let input_text = if app.input.is_empty() && app.input_mode == InputMode::Normal {
+        Span::styled(" press i to chat • ? for help ", Style::default().fg(Color::DarkGray))
     } else {
-        app.input.clone()
+        Span::styled(app.input.clone(), Style::default().fg(Color::White))
     };
 
     let input = Paragraph::new(input_text)
@@ -269,16 +269,17 @@ fn draw_input_box(f: &mut Frame, app: &App, area: Rect) {
                 .title(format!(" {} Input ", spinner))
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(border_color))
-        )
-        .style(Style::default().fg(Color::Yellow));
+        );
 
     f.render_widget(input, area);
 
     if app.input_mode == InputMode::Insert {
-        f.set_cursor(
-            area.x + app.input.len().min(area.width as usize - 4) as u16 + 2,
-            area.y + 1,
-        );
+        let input_len = app.input.len() as u16;
+        let max_width = area.width.saturating_sub(4);
+        let cursor_offset = input_len.min(max_width) + 2;
+        let cursor_x = area.x + cursor_offset;
+        let cursor_y = area.y + 1;
+        f.set_cursor(cursor_x, cursor_y);
     }
 }
 
